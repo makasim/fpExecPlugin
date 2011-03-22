@@ -1,0 +1,34 @@
+# fpBuildPlugin
+
+This is a simple way to wirte your own list of command to make deploy ro build.
+Some examples are provided in doc folder.
+
+## Installation
+
+1.download:
+
+pear package
+       
+    php symfony plugin:install fpBuildPlugin
+    
+svn tag 
+
+    svn checkout http://svn.symfony-project.com/plugins/fpBuildPlugin/tags/fpBuildPlugin-1.0.0
+
+dev version:
+
+    svn checkout http://svn.symfony-project.com/plugins/fpBuildPlugin/trunk
+ 
+2.enable it in ProjectConfiguration:
+
+    class ProjectConfiguration extends sfProjectConfiguration
+    {
+      public function setup()
+      {
+        $this->enablePlugins('fpBuildPlugin');
+      }
+    }
+
+## Overview
+ 
+You can look at the plugin tests to see what you can do with it.

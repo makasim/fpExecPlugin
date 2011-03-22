@@ -1,0 +1,9 @@
+symfony project:permissions
+symfony cc
+symfony doctrine:clean-model-files --no-confirmation
+symfony doctrine:build --all --and-load --no-confirmation
+symfony doctrine:drop-db --no-confirmation --env=test
+symfony doctrine:build-db --env=test
+symfony doctrine:insert-sql --env=test
+symfony project:permissions
+symfony cc

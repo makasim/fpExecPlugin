@@ -1,0 +1,7 @@
+./symfony cc
+./symfony fix
+./symfony propel:build-all --no-confirmation
+./symfony propel:data-load --application=backoffice
+./symfony propel:insert-sql --env=test --no-confirmation
+./symfony fix
+./symfony cc

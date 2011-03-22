@@ -1,0 +1,16 @@
+./symfony project:disable {APPLICATION} prod
+./symfony cc
+./symfony fix
+{fcDbBackup}
+{sfPropelMigrationsLight}
+svn cleanup
+svn up
+./symfony propel:migrate {APPLICATION}
+./symfony propel:build-filters
+./symfony propel:build-forms
+./symfony propel:build-model
+./symfony propel:build-sql  
+./symfony propel:insert-sql --env=test --no-confirmation
+./symfony cc
+./symfony fix
+./symfony project:enable {APPLICATION} prod
