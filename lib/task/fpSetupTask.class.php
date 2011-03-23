@@ -14,18 +14,11 @@ class fpSetupTask extends sfBaseTask
 
 EOF;
 
-//    $this->addArguments(array(
-//      new sfCommandArgument('profile', sfCommandArgument::REQUIRED, 'Build profile')));
-
     $this->addOptions(array(
       new sfCommandOption('files', null, sfCommandOption::PARAMETER_REQUIRED, 'A file contains sets of files to be processed'),
       new sfCommandOption('vars', null, sfCommandOption::PARAMETER_REQUIRED, 'A file contains sets of setup related data, such as connection to database'),
       new sfCommandOption('verbose', null, sfCommandOption::PARAMETER_NONE, 'Show more info on what is going on during the execution'),
       new sfCommandOption('ovewrite', null, sfCommandOption::PARAMETER_NONE, 'Show more info on what is going on during the execution')));
-
-    // init total timer
-    $this->_totalTimer = new sfTimer();
-    $this->_totalTimer->startTimer();
   }
 
   /**
@@ -36,13 +29,13 @@ EOF;
   {
     $this->optionsValues = $options;
 
-    $this->logVerbose('Parse a `vars` file');
+    $this->logSectionVerbose('parse', '`vars` file');
     $vars = $this->_parseConfigFile($options['vars']);
 
-    $this->logVerbose('Parse a `files` file');
+    $this->logSectionVerbose('parse', '`files` file');
     $files = $this->_parseConfigFile($options['files']);
 
-    $this->logVerbose('Normilize files pathes');
+    $this->logSectionVerbose('normilize', 'files pathes');
     $normalizedFiles = array();
     foreach ($files as $sourceFile => $targetFile) {
 
@@ -59,8 +52,8 @@ EOF;
       $normalizedFiles[$sourceFile] = $targetFile;
     }
 
-    $this->logVerbose('Process files');
     foreach ($normalizedFiles as $sourceFile => $targetFile) {
+      $this->logSectionVerbose('process', "{$sourceFile} -> {$targetFile}");
       $this->_processFile($targetFile, $sourceFile, $vars);
     }
   }
@@ -78,7 +71,7 @@ EOF;
   protected function _processFile($target, $source, array $vars = array())
   {
     if (!$this->_isOverwrite() && file_exists($target)) {
-      $this->logVerbose('Skipped. Target file `'.$target.'` exists. Use --overwrite option to force it changes');
+      $this->logVerbose('  skipped');
       return;
     }
 
@@ -89,7 +82,7 @@ EOF;
     fputs($fp, $this->_renderFile($source, $vars));
     fclose($fp);
 
-    $this->logVerbose('Target file `'.$target.'` is created\updated on the base of file: `'.$source.'`');
+    $this->logVerbose('  finished');
   }
 
   /**
@@ -106,17 +99,20 @@ EOF;
     $matches = array();
   //  var_dump($content);
     if (!preg_match_all('/%%(.*?)%%/m', $content, $matches)) {
-      $this->logVerbose('Source file does not contain any of predined varables (Looks like: %%VAR%%)');
+      $this->logVerbose('  source file does not contain any of predined varables (Looks like: %%VAR%%)');
       return;
     }
 
     $matches = array_unique($matches[1]);
-    $this->logVerbose('There were some predined vars found: `'.implode('`, `', $matches).'`');
+    $this->logVerbose('  There were some predined vars found:');
 
     $vars = array();
     foreach($matches as $key) {
       if (array_key_exists($key, $input_vars)) {
         $vars["%%{$key}%%"] = $input_vars[$key];
+
+        $this->logVerbose("    %%{$key}%% => {$input_vars[$key]}");
+
         continue;
       }
 
@@ -177,21 +173,21 @@ EOF;
     // guess file form project root config directory.
     $relativeConfigPath = sfConfig::get('sf_root_dir').'/config/'.$file;
     if (file_exists($relativeConfigPath)) {
-      $this->logVerbose('Guess path is `'.$relativeConfigPath.'` ');
+      $this->logVerbose('  Guess path is `'.$relativeConfigPath.'` ');
       return $relativeConfigPath;
     }
 
     // guess relative from project root
     $relativeRootPath = sfConfig::get('sf_root_dir') . '/'. $file;
     if (file_exists($relativeRootPath)) {
-      $this->logVerbose('Guess path is `'.$relativeConfigPath.'` ');
+      $this->logVerbose('  Guess path is `'.$relativeConfigPath.'` ');
       return $relativeRootPath;
     }
 
     // guess absolute
     $absolutePath = $file;
     if (file_exists($absolutePath)) {
-      $this->logVerbose('Guess path is `'.$relativeConfigPath.'` ');
+      $this->logVerbose('  Guess path is `'.$relativeConfigPath.'` ');
       return $absolutePath;
     }
 
@@ -217,6 +213,17 @@ EOF;
   protected function _isOverwrite()
   {
     return (bool) $this->optionsValues['ovewrite'];
+  }
+
+  /**
+   *
+   * @param array|string $messages
+   */
+  protected function logSectionVerbose($section, $messages)
+  {
+    if ($this->isVerbose()) {
+      $this->logSection($section, $messages);
+    }
   }
 
   /**
