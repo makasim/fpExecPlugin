@@ -100,7 +100,7 @@ EOF;
   //  var_dump($content);
     if (!preg_match_all('/%%(.*?)%%/m', $content, $matches)) {
       $this->logVerbose('  source file does not contain any of predined varables (Looks like: %%VAR%%)');
-      return;
+      return $content;
     }
 
     $matches = array_unique($matches[1]);
